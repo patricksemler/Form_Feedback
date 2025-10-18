@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
+import { useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
 
 export default function HomeScreen() {
     const [videoURI, setVideoURI] = useState<string | null>(null);
+    const [uploading, setUploading] = useState(false);
 
     enum Exercise {
-        PUSHUP = "pushup",
-        SITUP = "situp",
-        SQUAT = "squat",
-        LUNGE = "lunge",
+        PUSHUP = 'pushup',
+        SITUP = 'situp',
+        SQUAT = 'squat',
+        LUNGE = 'lunge',
     };
 
     const [selectedExercise, setSelectedExercise] = useState(Exercise.PUSHUP);
 
-    async function pickVideo() {
+    async function pickAndUploadVideo() {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (status !== 'granted') {
@@ -31,7 +32,37 @@ export default function HomeScreen() {
 
         if (!result.canceled) {
             setVideoURI(result.assets[0].uri);
-            console.log(`Picked video URI: ${videoURI}`)
+            console.log('Picked video URI:', videoURI)
+        }
+
+        const formData = new FormData();
+
+        formData.append('exercise', selectedExercise);
+        formData.append('video', {
+            uri: videoURI,
+            type: 'video/mp4',
+            name: `${Date.now()}.mp4`,
+        } as any);
+
+        setUploading(true);
+
+        try {
+            const response = await fetch('(INSERT API URL HERE)', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(errorText);
+            }
+
+            console.log(`Upload succeeded`);
+        } catch (error) {
+            console.log('Error:', error);
+            alert('Upload failed.')
+        } finally {
+            setUploading(false);
         }
     }
 
@@ -46,12 +77,12 @@ export default function HomeScreen() {
                     setSelectedExercise(itemValue as Exercise);
                 }}
             >
-                <Picker.Item label="Push Up" value={Exercise.PUSHUP} />
-                <Picker.Item label="Sit Up" value={Exercise.SITUP} />
-                <Picker.Item label="Squat" value={Exercise.SQUAT} />
-                <Picker.Item label="Lunge" value={Exercise.LUNGE} />
+                <Picker.Item label='Push Up' value={Exercise.PUSHUP} />
+                <Picker.Item label='Sit Up' value={Exercise.SITUP} />
+                <Picker.Item label='Squat' value={Exercise.SQUAT} />
+                <Picker.Item label='Lunge' value={Exercise.LUNGE} />
             </Picker>
-            <Button title="Upload Video" onPress={pickVideo} />
+            <Button title='Upload Video' onPress={pickAndUploadVideo} />
             {videoURI && (
                 <Text style={styles.paragraph}>Selected video: {videoURI}</Text>
             )}
