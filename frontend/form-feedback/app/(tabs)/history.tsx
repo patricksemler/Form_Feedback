@@ -4,7 +4,7 @@ export default function ResultsScreen() {
     return (
         <View style={styles.container}>
             <Text style={styles.title}>📊 History</Text>
-            <Text>(stuff here)</Text>
+            <Text style={styles.paragraph}>(stuff here)</Text>
         </View>
     );
 }
@@ -18,6 +18,10 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 24,
         fontWeight: 'bold',
+        marginBottom: 10,
+    },
+    paragraph: {
+        fontSize: 18,
         marginBottom: 10,
     },
 });
