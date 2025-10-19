@@ -19,6 +19,7 @@ def analyze_form():
   savePath = os.path.join(UPLOAD_FOLDER, video.filename)
 
   video.save(savePath)
+  print(f"Saved videon{name}")
 
   return f"Saved video to {savePath}", 200
 
