@@ -1,7 +1,12 @@
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const { height, width } = Dimensions.get('window');
+
+const buttonHeight = height * 0.07;
+const buttonWidth = width * 0.6;
 
 export default function HomeScreen() {
     const [videoURI, setVideoURI] = useState<string | null>(null);
@@ -30,16 +35,20 @@ export default function HomeScreen() {
             quality: 0.5,
         });
 
-        if (!result.canceled) {
-            setVideoURI(result.assets[0].uri);
-            console.log('Picked video URI:', videoURI)
+        if (result.canceled || !result.assets) {
+            return;
         }
+        console.log('Picker result:', result);
+
+        const pickedURI = result.assets[0].uri;
+        setVideoURI(pickedURI);
+        console.log('Picked video URI:', pickedURI)
 
         const formData = new FormData();
 
         formData.append('exercise', selectedExercise);
         formData.append('video', {
-            uri: videoURI,
+            uri: pickedURI,
             type: 'video/mp4',
             name: `${Date.now()}.mp4`,
         } as any);
@@ -50,6 +59,9 @@ export default function HomeScreen() {
             const response = await fetch('(INSERT API URL HERE)', {
                 method: 'POST',
                 body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
             });
 
             if (!response.ok) {
@@ -68,21 +80,26 @@ export default function HomeScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.title}>🏠 Home Screen</Text>
-            <Text style={styles.paragraph}>Welcome to Form Feedback</Text>
+            <Text style={styles.title}>Form Feedback</Text>
 
-            <Picker
-                selectedValue={selectedExercise}
-                onValueChange={(itemValue) => {
-                    setSelectedExercise(itemValue as Exercise);
-                }}
-            >
-                <Picker.Item label='Push Up' value={Exercise.PUSHUP} />
-                <Picker.Item label='Sit Up' value={Exercise.SITUP} />
-                <Picker.Item label='Squat' value={Exercise.SQUAT} />
-                <Picker.Item label='Lunge' value={Exercise.LUNGE} />
-            </Picker>
-            <Button title='Upload Video' onPress={pickAndUploadVideo} />
+            <View style={styles.pickerContainer}>
+                <Picker
+                    selectedValue={selectedExercise}
+                    onValueChange={(itemValue) => {
+                        setSelectedExercise(itemValue as Exercise);
+                    }}
+                    style={styles.picker}
+                >
+                    <Picker.Item label='Push Up' value={Exercise.PUSHUP} />
+                    <Picker.Item label='Sit Up' value={Exercise.SITUP} />
+                    <Picker.Item label='Squat' value={Exercise.SQUAT} />
+                    <Picker.Item label='Lunge' value={Exercise.LUNGE} />
+                </Picker>
+            </View>
+
+            <TouchableOpacity style={styles.button} onPress={pickAndUploadVideo}>
+                <Text>Upload Video</Text>
+            </TouchableOpacity>
             {videoURI && (
                 <Text style={styles.paragraph}>Selected video: {videoURI}</Text>
             )}
@@ -100,9 +117,37 @@ const styles = StyleSheet.create({
         fontSize: 24,
         fontWeight: 'bold',
         marginBottom: 10,
+        color: '#000',
     },
     paragraph: {
         fontSize: 18,
         marginBottom: 10,
+        color: '#000',
+    },
+    button: {
+        width: buttonWidth,
+        height: buttonHeight,
+        backgroundColor: '#1E90FF',
+        borderRadius: 8,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginBottom: 20,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+    },
+    picker: {
+        color: '#000',
+        paddingHorizontal: 10,
+    },
+    pickerContainer: {
+        width: buttonWidth,
+        height: buttonHeight,
+        backgroundColor: '#1E90FF',
+        borderRadius: 8,
+        justifyContent: 'center',
+        marginBottom: 20,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.3,
+        overflow: 'hidden',
     },
 });
