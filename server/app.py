@@ -34,26 +34,12 @@ def analyzeform():
         print("Missing video or exercise")
         return jsonify({"error": f"No video or exercise provided, got exercise: {exercise}"}), 400
 
-    # Generate unique filename to avoid conflicts
-    filename = f"{exercise}{int(time.time())}.mp4"
-    save_path = os.path.join(UPLOAD_FOLDER, filename)
+  savePath = os.path.join(UPLOAD_FOLDER, video.filename)
 
-    # Save the video
-    video.save(save_path)
-    print(f"Saved video: {save_path}, exercise: {exercise}")
+  video.save(savePath)
+  print(f"Saved videon{name}")
 
-    try:
-        # Initialize FormAnalyzer and process the video
-        analyzer = FormAnalyzer(exercise_type=exercise, test_json=TEST_JSON)
-        results = analyzer.process_video(save_path)
+  return f"Saved video to {savePath}", 200
 
-        return jsonify({
-            "message": f"Video saved and analyzed: {save_path}",
-            "analysis": results
-        }), 200
-    except Exception as e:
-        print(f"Analysis error: {str(e)}")
-        return jsonify({"error": f"Analysis failed: {str(e)}"}), 500
-
-if __name__ == "main":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
