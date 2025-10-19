@@ -56,12 +56,9 @@ export default function HomeScreen() {
         setUploading(true);
 
         try {
-            const response = await fetch('(INSERT API URL HERE)', {
+            const response = await fetch('https://webhook.site/e67aa354-6ea4-480f-83d1-3ebb59651e0f', {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
             });
 
             if (!response.ok) {
