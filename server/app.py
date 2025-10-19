@@ -1,45 +1,30 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, File, UploadFile, Form
 import os
-# from form_analyzer import FormAnalyzer  # Import your FormAnalyzer class
+import uvicorn
 
 UPLOAD_FOLDER = "./uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-app = Flask(__name__)
-CORS(app)  # Enable CORS for React Native frontend
+app = FastAPI()
 
-# Example JSON for testing (move to a file or database later)
-TEST_JSON = {
-    "exercise": "pushup",
-    "ideal_reps": [
-        {
-            "rep_number": 1,
-            "angles": {
-                "left_elbow": {"min": 80, "max": 100},
-                "right_elbow": {"min": 80, "max": 100},
-                "back_angle": {"min": 165, "max": 180}
-            },
-            "notes": "Keep back straight, elbows close, controlled descent"
-        }
-    ]
-}
-
-@app.route("/analyze", methods=["POST"])
-def analyzeform():
-    exercise = request.form.get("exercise")
-    video = request.files.get("video")
-
-    if not video or not exercise:
-        print("Missing video or exercise")
-        return jsonify({"error": f"No video or exercise provided, got exercise: {exercise}"}), 400
-
-  savePath = os.path.join(UPLOAD_FOLDER, video.filename)
-
-  video.save(savePath)
-  print(f"Saved videon{name}")
-
-  return f"Saved video to {savePath}", 200
+@app.post("/analyze")
+async def analyze_form(
+    exercise: str = Form(...),
+    video: UploadFile = File(...)
+):
+    print("Received analyze request, exercise =", exercise)
+    print("Video filename:", video.filename)
+    save_path = os.path.join(UPLOAD_FOLDER, video.filename)
+    try:
+        contents = await video.read()
+        with open(save_path, "wb") as f:
+            f.write(contents)
+        print(f"Saved video to {save_path}")
+    except Exception as e:
+        print("Error saving file:", e)
+        return {"error": "File save failed", "details": str(e)}, 500
+    return {"message": f"Saved video to {save_path}", "exercise": exercise}
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    uvicorn.run(app, host="0.0.0.0", port=5001, debug=True)
+

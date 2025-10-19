@@ -25,7 +25,7 @@ export default function HomeScreen() {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (status !== 'granted') {
-            alert('Media library permissions not granted.')
+            alert('Media library permissions not granted.');
             return;
         }
 
@@ -35,46 +35,45 @@ export default function HomeScreen() {
             quality: 0.5,
         });
 
-        if (result.canceled || !result.assets) {
+        if (result.canceled || !result.assets || result.assets.length === 0) {
             return;
         }
-        console.log('Picker result:', result);
 
         const pickedURI = result.assets[0].uri;
         setVideoURI(pickedURI);
-        console.log('Picked video URI:', pickedURI)
+        console.log('Picked video URI:', pickedURI);
 
         const formData = new FormData();
 
         formData.append('exercise', selectedExercise);
         formData.append('video', {
             uri: pickedURI,
-            type: 'video/mp4',
             name: `${Date.now()}.mp4`,
+            type: 'video/mp4',
         } as any);
 
         setUploading(true);
 
         try {
-            const response = await fetch('(INSERT API URL HERE)', {
+            const response = await fetch('http://10.246.79.39:5001/analyze', {
                 method: 'POST',
                 body: formData,
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
             });
+
+            const json = await response.json().catch(() => null);
 
             if (!response.ok) {
                 const errorText = await response.text();
                 throw new Error(errorText);
             }
 
-            console.log(`Upload succeeded`);
+            alert('Upload succeeded!');
         } catch (error) {
-            console.log('Error:', error);
+            console.error('Error:', error);
             alert('Upload failed.')
         } finally {
             setUploading(false);
+            console.log('Upload finished (success or error).');
         }
     }
 
