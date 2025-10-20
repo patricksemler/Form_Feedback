@@ -52,7 +52,7 @@ The project is composed of two main components:
 3. Install the required dependencies:
 
    ```bash
-    pip install fastapi uvicorn opencv-python cvzone numpy openai
+   pip install fastapi uvicorn opencv-python cvzone numpy openai
    ```
 
 4. Start the FastAPI server:
