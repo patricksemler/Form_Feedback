@@ -58,7 +58,7 @@ The project is composed of two main components:
 4. Start the FastAPI server:
 
    ```bash
-   uvicorn main:app --reload
+   uvicorn app:app --host 0.0.0.0 --port 5001 --reload
    ```
 
    The backend will run on `http://localhost:5001`.
@@ -87,14 +87,14 @@ The project is composed of two main components:
 4. Start the Expo development server:
 
    ```bash
-   expo start
+   npm start
    ```
 
 5. Open the app on your mobile device or emulator to start using the Form Feedback app.
 
 ### Configuration
 
-* **Server IP**: The React Native app uses `http://10.246.79.39:5001` for the backend. Ensure this matches your server's IP address for communication.
+* **Server IP**: The React Native app uses `http://localhost:5001` for the backend.
 * **Exercise Options**: The app supports multiple exercises (Push-Up, Sit-Up, Squat, Lunge). You can switch exercises using the app interface.
 
 ### Running the Backend Locally
