@@ -1,34 +1,51 @@
-import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import { useState } from 'react';
 import { Dimensions, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const { height, width } = Dimensions.get('window');
+const deviceHeight = Dimensions.get('window').height;
+const deviceWidth = Dimensions.get('window').width;
+const deviceMinDimension = Math.min(deviceWidth, deviceHeight);
 
-const buttonHeight = height * 0.07;
-const buttonWidth = width * 0.6;
+const serverIP = '10.246.79.39';
+const serverPort = '5001';
+
+enum Exercise {
+    PUSHUP = 'Push Up',
+    SITUP = 'Sit Up',
+    SQUAT = 'Squat',
+    LUNGE = 'Lunge',
+};
+
+const exerciseOrder = [
+    Exercise.PUSHUP,
+    Exercise.SITUP,
+    Exercise.SQUAT,
+    Exercise.LUNGE
+];
 
 export default function HomeScreen() {
     const [videoURI, setVideoURI] = useState<string | null>(null);
-    const [uploading, setUploading] = useState(false);
-
-    enum Exercise {
-        PUSHUP = 'pushup',
-        SITUP = 'situp',
-        SQUAT = 'squat',
-        LUNGE = 'lunge',
-    };
-
     const [selectedExercise, setSelectedExercise] = useState(Exercise.PUSHUP);
 
+    function cycleExercise() {
+        const currentIndex = exerciseOrder.indexOf(selectedExercise);
+        const newIndex = (currentIndex + 1) % exerciseOrder.length;
+
+        setSelectedExercise(exerciseOrder[newIndex]);
+        console.log(`[Exercise] Switched exerciseOrder index from ${currentIndex} to ${newIndex}.`)
+    }
+
     async function pickAndUploadVideo() {
+        console.log(`[Upload] Requesting media library permissions.`)
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (status !== 'granted') {
-            alert('Media library permissions not granted.');
+            console.log(`[Upload] Media library permissions not granted.`)
             return;
         }
+        console.log(`[Upload] Media library permissions granted.`)
 
+        console.log(`[Upload] Getting video from user.`)
         const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Videos,
             allowsEditing: false,
@@ -38,24 +55,25 @@ export default function HomeScreen() {
         if (result.canceled || !result.assets || result.assets.length === 0) {
             return;
         }
+        console.log(`[Upload] Video received.`)
 
         const pickedURI = result.assets[0].uri;
         setVideoURI(pickedURI);
-        console.log('Picked video URI:', pickedURI);
+        console.log(`[Upload] Picked video URI: ${pickedURI}.`);
 
+        console.log(`[Upload] Creating form data.`);
         const formData = new FormData();
-
         formData.append('exercise', selectedExercise);
         formData.append('video', {
             uri: pickedURI,
             name: `${Date.now()}.mp4`,
             type: 'video/mp4',
         } as any);
-
-        setUploading(true);
+        console.log(`[Upload] Form data created.`);
 
         try {
-            const response = await fetch('http://10.246.79.39:5001/analyze', {
+            console.log(`[Upload] Beginning upload.`);
+            const response = await fetch(`http://${serverIP}:${serverPort}/analyze`, {
                 method: 'POST',
                 body: formData,
             });
@@ -66,14 +84,9 @@ export default function HomeScreen() {
                 const errorText = await response.text();
                 throw new Error(errorText);
             }
-
-            alert('Upload succeeded!');
+            console.log(`[Upload] Upload succeeded.`)
         } catch (error) {
-            console.error('Error:', error);
-            alert('Upload failed.')
-        } finally {
-            setUploading(false);
-            console.log('Upload finished (success or error).');
+            console.error(`[Upload] Upload failed. Error: {error}`);
         }
     }
 
@@ -81,27 +94,14 @@ export default function HomeScreen() {
         <View style={styles.container}>
             <Text style={styles.title}>Form Feedback</Text>
 
-            <View style={styles.pickerContainer}>
-                <Picker
-                    selectedValue={selectedExercise}
-                    onValueChange={(itemValue) => {
-                        setSelectedExercise(itemValue as Exercise);
-                    }}
-                    style={styles.picker}
-                >
-                    <Picker.Item label='Push Up' value={Exercise.PUSHUP} />
-                    <Picker.Item label='Sit Up' value={Exercise.SITUP} />
-                    <Picker.Item label='Squat' value={Exercise.SQUAT} />
-                    <Picker.Item label='Lunge' value={Exercise.LUNGE} />
-                </Picker>
-            </View>
+            <View style={styles.gap}></View>
 
-            <TouchableOpacity style={styles.button} onPress={pickAndUploadVideo}>
-                <Text>Upload Video</Text>
+            <TouchableOpacity style={styles.button} onPress={cycleExercise}>
+                <Text style={styles.buttonText}>{selectedExercise}</Text>
             </TouchableOpacity>
-            {videoURI && (
-                <Text style={styles.paragraph}>Selected video: {videoURI}</Text>
-            )}
+            <TouchableOpacity style={styles.button} onPress={pickAndUploadVideo}>
+                <Text style={styles.buttonText}>Upload Video</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -111,42 +111,31 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+        flexDirection: 'column',
+        backgroundColor: '#FFF',
+    },
+    gap: {
+        flex: 3 / 4,
     },
     title: {
-        fontSize: 24,
+        fontSize: deviceMinDimension * 0.08,
         fontWeight: 'bold',
-        marginBottom: 10,
-        color: '#000',
-    },
-    paragraph: {
-        fontSize: 18,
-        marginBottom: 10,
         color: '#000',
     },
     button: {
-        width: buttonWidth,
-        height: buttonHeight,
-        backgroundColor: '#1E90FF',
-        borderRadius: 8,
+        width: deviceWidth * 0.75,
+        height: deviceHeight * 0.08,
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 20,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.3,
-    },
-    picker: {
-        color: '#000',
-        paddingHorizontal: 10,
-    },
-    pickerContainer: {
-        width: buttonWidth,
-        height: buttonHeight,
-        backgroundColor: '#1E90FF',
+        backgroundColor: '#222',
         borderRadius: 8,
-        justifyContent: 'center',
-        marginBottom: 20,
+        marginTop: 10,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.3,
-        overflow: 'hidden',
+    },
+    buttonText: {
+        fontSize: deviceWidth * 0.042,
+        fontWeight: 'bold',
+        color: '#FFFFFF',
     },
 });

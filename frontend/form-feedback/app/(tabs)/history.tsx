@@ -27,15 +27,8 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-    },
-    paragraph: {
-        fontSize: 18,
-        marginBottom: 10,
+        flexDirection: 'column',
+        backgroundColor: '#FFF',
     },
     listItem: {
         padding: 15,
@@ -45,5 +38,7 @@ const styles = StyleSheet.create({
         marginBottom: 5,
         borderRadius: 5,
     },
-    itemText: { fontSize: 18 },
+    itemText: {
+        fontSize: 18
+    },
 });

@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "@react-native-picker/picker": "^2.11.4",
+    "expo-image-picker": "^17.0.8",
+    "expo-router": "^6.0.12",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.2"
+  }
+}
