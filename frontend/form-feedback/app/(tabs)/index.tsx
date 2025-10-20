@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFF',
     },
     gap: {
-        flex: 3 / 4,
+        flex: 4 / 5,
     },
     title: {
         fontSize: deviceMinDimension * 0.08,

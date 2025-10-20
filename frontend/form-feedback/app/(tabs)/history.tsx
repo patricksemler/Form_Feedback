@@ -1,4 +1,8 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, FlatList, StyleSheet, Text, View } from 'react-native';
+
+const deviceHeight = Dimensions.get('window').height;
+const deviceWidth = Dimensions.get('window').width;
+const deviceMinDimension = Math.min(deviceWidth, deviceHeight);
 
 const history = [
     "Lorem ipsum dolor sit amet consectetur adipiscing elit. Quisque faucibus ex sapien vitae pellentesque sem placerat.",
@@ -39,6 +43,6 @@ const styles = StyleSheet.create({
         borderRadius: 5,
     },
     itemText: {
-        fontSize: 18
+        fontSize: deviceMinDimension * 0.04
     },
 });
